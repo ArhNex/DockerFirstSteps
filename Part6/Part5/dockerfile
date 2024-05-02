@@ -1,0 +1,39 @@
+FROM nginx:latest
+
+RUN apt-get -y update && apt-get -y upgrade && apt-get install -y gcc spawn-fcgi libfcgi-dev && rm -rf /var/lib/apt/lists
+
+COPY ./Part3/nginx/nginx.conf /etc/nginx
+COPY ./Part3/server.c /etc/nginx
+COPY ./entry.sh /
+
+RUN gcc -o /etc/nginx/server /etc/nginx/server.c -l fcgi
+RUN chmod +x entry.sh
+
+EXPOSE 81
+
+RUN touch /var/run/nginx.pid; \
+    chown -R nginx:nginx /var/run/nginx.pid \
+    chmod 755 /var/run/nginx.pid \
+    chown -R nginx:nginx /etc/nginx/nginx.conf;\
+    chown -R nginx:nginx /var/cache/nginx; \
+    chown -R nginx:nginx /home; \
+    chown -R nginx;nginx /var/run/nginx.pid; \
+    chmod 755 /usr/bin/gpasswd; \
+    chmod 755 /usr/bin/newgrp; \
+    chmod 755 /bin/su; \
+    chmod 755 /bin/mount; \
+    chmod 755 /bin/unmount; \
+    chmod 755 /usr/bin/chsh; \
+    chmod 755 /usr/bin/chfn; \
+    chmod 755 /usr/bin/expiry; \
+    chmod 755 /usr/bin/wall; \
+    chmod 755 /sbin/unix_chkpwd; \
+    chmod 755 /usr/bin/chage; \
+    chmod 755 /usr/bin/passwd; \
+    chmod 755 /usr/bin/umount; \
+    chmod 755 /usr/bin/newgrp
+
+USER nginx
+HEALTHCHECK --interval=3m --timeout=3s CMD [ "curl", "-f", "http://localhost/", "||", "exit", "1" ]
+
+ENTRYPOINT ["./entry.sh"]

@@ -1,0 +1,16 @@
+FROM nginx:latest
+
+RUN apt-get -y update
+RUN apt-get -y upgrade
+RUN apt-get install -y gcc spawn-fcgi libfcgi-dev
+
+COPY Part3/nginx/nginx.conf /etc/nginx
+COPY Part3/server.c /etc/nginx
+COPY entry.sh /
+
+RUN gcc -o /etc/nginx/server /etc/nginx/server.c -l fcgi
+RUN chmod +x entry.sh
+
+EXPOSE 81
+
+ENTRYPOINT ["./entry.sh"]
